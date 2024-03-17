@@ -1,8 +1,12 @@
-import { AppBar, Box, IconButton, Toolbar, Tooltip, Typography } from '@mui/material'
-import React, { useState } from 'react'
+import { AppBar, Backdrop, Box, IconButton, Toolbar, Tooltip, Typography } from '@mui/material'
+import React, { Suspense, lazy, useState } from 'react'
 import { orange } from '../constants/color'
-import { Menu as Menuicon, Search as SearchIcon, Add as AddIcon, Group as GroupIcon, Logout as LogoutIcon , Notifications as NotificationIcon } from "@mui/icons-material"
+import { Menu as Menuicon, Search as SearchIcon, Add as AddIcon, Group as GroupIcon, Logout as LogoutIcon, Notifications as NotificationIcon } from "@mui/icons-material"
 import { useNavigate } from "react-router-dom"
+
+const Search = lazy(() => import('../specific/Search'))
+const Notification = lazy(() => import('../specific/Notification'))
+const NewGroups = lazy(() => import('../specific/NewGroup'))
 
 const Header = () => {
 
@@ -16,11 +20,11 @@ const Header = () => {
 
   const handleMobile = () => {
     console.log("Mobile");
-    setisMobile((prev) =>  !prev)
+    setisMobile((prev) => !prev)
   }
 
   const openSearchDialog = () => {
-    console.log("search");
+
     setIsSearch((prev) => !prev)
   }
 
@@ -29,7 +33,7 @@ const Header = () => {
     setIsNewGroup((prev) => !prev)
   }
 
-  const openNotification = () =>{
+  const openNotification = () => {
     setIsNotification((prev) => !prev)
   }
 
@@ -68,6 +72,24 @@ const Header = () => {
           </Toolbar>
         </AppBar>
       </Box>
+
+      {isSearch && (
+        <Suspense fallback={<Backdrop open />} >
+          <Search />
+        </Suspense>
+      )}
+
+      {isNotification && (
+        <Suspense fallback={<Backdrop open />} >
+          <Notification />
+        </Suspense>
+      )}
+
+      {isNewGroup && (
+        <Suspense fallback={<Backdrop open />} >
+          <NewGroups />
+        </Suspense>
+      )}
     </>
   )
 }
@@ -75,7 +97,7 @@ const Header = () => {
 const IconBtn = ({ title, icon, onClick }) => {
   return (
     <Tooltip title={title} >
-      <IconButton color='inherit' size='large' onClick={onClick} >
+      <IconButton color='inherit' size='large' onClick={() => onClick()} >
         {icon}
       </IconButton>
     </Tooltip>
