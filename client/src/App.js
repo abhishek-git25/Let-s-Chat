@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Suspense, lazy } from 'react';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { LayoutLoaders } from './components/layout/Loaders';
+import Groups from './pages/Groups';
 
 const Home = lazy(() => import("./pages/home"))
 const Login = lazy(() => import("./pages/login"))
@@ -19,6 +20,7 @@ function App() {
             <Route element={<ProtectedRoute user={user} />} >
               <Route path='/' element={<Home />} />
               <Route path='/chat/:chatId' element={<Chat />} />
+              <Route path='/groups' element = {<Groups/>} />
             </Route>
             <Route path='/login' element={
               <ProtectedRoute user={!user} redirect='/' >

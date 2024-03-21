@@ -1,6 +1,8 @@
 import { Box, Typography } from '@mui/material';
 import React from 'react'
 import moment from 'moment'
+import { fileFormat } from '../../lib/features';
+import RenderAttachment from './RenderAttachment';
 
 const MessageComponent = ({ message, user }) => {
 
@@ -22,13 +24,13 @@ const MessageComponent = ({ message, user }) => {
     }} >
       {!sameSender && <Typography color={"#2694ab"} fontWeight={"600"} variant='caption' >{sender.name}</Typography>}
       {content && <Typography>{content}</Typography>}
-      {attachments.length > 0 && attachments.map((i , index) => {
+      {attachments.length > 0 && attachments.map((i, index) => {
         const url = i.url
-        const file = "asb"
+        const file = fileFormat(url)
         return <Box key={index} >
-        <a href='' target='_blank' download  style={{ color : "black" }}>
-
-        </a>
+          <a href={url} target='_blank' download style={{ color: "black" }}>
+            {RenderAttachment(file, url)}
+          </a>
         </Box>
       })}
       <Typography variant='caption' color={"text.secondary"}>{timeAgo}</Typography>

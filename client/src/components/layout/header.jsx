@@ -38,7 +38,7 @@ const Header = () => {
   }
 
   const navigateToGroup = () => {
-    navigate('/group')
+    navigate('/groups')
   }
 
   const logoutHandler = () => {

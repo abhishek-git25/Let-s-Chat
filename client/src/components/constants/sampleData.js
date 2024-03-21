@@ -49,12 +49,12 @@ export const sampleNotification = [
 
 export const sampleMessage = [
     {
-        attachments: [
-            {
-                public_id: "anc",
-                url: "https://wallpapercave.com/wp/wp5212086.jpg"
-            }
-        ],
+        // attachments: [
+        //     {
+        //         public_id: "anc",
+        //         url: "https://wallpapercave.com/wp/wp5212086.jpg"
+        //     }
+        // ],
         content: "abc message",
         _id: "ajcxmd",
         sender: {

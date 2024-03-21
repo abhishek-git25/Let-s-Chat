@@ -32,7 +32,7 @@ const Chat = () => {
         }}
       >
         {sampleMessage.map((item) => {
-          return <MessageComponent message={item} user={user} />
+          return <MessageComponent message={item} user={user} key={item.id} />
         })}
       </Stack>
       <form style={{

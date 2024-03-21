@@ -3,7 +3,7 @@ import React from 'react'
 
 const FileMenu = ({ anchorE1 }) => {
     return (
-        <Menu>
+        <Menu open={false} >
             <div style={{ width: "10rem" }} >
                 LOREM IPSUM
             </div>
