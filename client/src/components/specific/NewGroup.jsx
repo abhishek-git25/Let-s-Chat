@@ -16,7 +16,6 @@ const NewGroup = () => {
         setselectedMembers((prev) => prev.includes(id) ? prev.filter((currEl) => currEl !== id) : [...prev, id])
     }
 
-    console.log(selectedMembers, "19");
 
     const submitHandler = () => {
         console.log("submit");
