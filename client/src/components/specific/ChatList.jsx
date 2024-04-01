@@ -10,7 +10,6 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
         <Stack width={w} direction={"column"} overflow={"auto"} height={"100%"} >
             {chats.map((data, index) => {
                 const { avatar, _id, name, groupChat, members } = data
-                console.log(_id, chatId, "13")
                 const newMessage = newMessageAlerts.find((alert) => parseInt(alert.chatId) === _id)
                 const isOnline = members.some((member) => onLineUsers.includes(_id))
 
