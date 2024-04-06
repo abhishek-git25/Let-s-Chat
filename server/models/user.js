@@ -1,6 +1,7 @@
-import { Schema, model, models } from 'mongoose'
+import { hash } from 'bcrypt'
+import mongoose from 'mongoose'
 
-const schema = new Schema({
+const schema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -25,8 +26,15 @@ const schema = new Schema({
             required: true
         }
     }
-},{
-    timestamps : true
+}, {
+    timestamps: true
 })
 
-export const User = models.User || ("User", schema)
+schema.pre('save', async function () {
+
+    if (!this.isModified("password")) next();
+
+    this.password = await hash(this.password, 10)
+})
+
+export const User = mongoose.model("User", schema)
