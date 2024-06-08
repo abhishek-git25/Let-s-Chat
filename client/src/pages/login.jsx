@@ -4,6 +4,11 @@ import { CameraAlt as CameraAltIcon } from '@mui/icons-material'
 import { VisuallyHiddenInput } from '../components/styles/StyledComponents'
 import { useFileHandler, useInputValidation } from '6pp'
 import { usernameValidator } from '../utils/validators'
+import axios from 'axios'
+import { server } from '../components/constants/config'
+import { useDispatch } from 'react-redux'
+import { userExists } from '../redux/reducers/auth'
+import toast from 'react-hot-toast'
 
 const Login = () => {
 
@@ -14,6 +19,66 @@ const Login = () => {
     const bio = useInputValidation()
 
     const avatar = useFileHandler("single")
+
+    const dispatch = useDispatch()
+
+    const handleLogin = async (e) => {
+
+        e.preventDefault()
+        const config = {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+
+        try {
+            const { data } = await axios.post(`${server}/user/login`, {
+                username: username.value,
+                password: password.value
+            },
+                config
+            )
+            dispatch(userExists(true))
+            toast.success(data.message)
+        } catch (error) {
+            toast.error(error?.response?.data?.message)
+        }
+    }
+
+    const handleSignUp = async (e) => {
+        e.preventDefault()
+        const formData = new FormData()
+        formData.append("avatar", avatar.file)
+        formData.append("name", name.value)
+        formData.append("username", username.value)
+        formData.append("bio", bio.value)
+        formData.append("password", password.value)
+
+        const config = {
+            withCredentials: true,
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        }
+
+        try {
+            const { data } = await axios.post(
+                `${server}/user/new`,
+                formData, config
+            )
+            dispatch(userExists(true))
+            toast.success(data.message)
+        } catch (error) {
+            toast.error(error?.response?.data?.message)
+        }
+
+
+    }
+
+
+
+
 
 
     return (
@@ -29,9 +94,9 @@ const Login = () => {
                     <>
                         <Typography variant="h5">Login</Typography>
                         <form style={{ width: "100%", marginTop: "1rem" }} >
-                            <TextField required fullWidth label="Username" margin='normal' variant='outlined' />
-                            <TextField required fullWidth label="Password" type='password' margin='normal' variant='outlined' />
-                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} >
+                            <TextField required fullWidth label="Username" margin='normal' variant='outlined' value={username.value} onChange={username.changeHandler} />
+                            <TextField required fullWidth label="Password" type='password' margin='normal' variant='outlined' value={password.value} onChange={password.changeHandler} />
+                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleLogin(e)} >
                                 Login
                             </Button>
                             <Typography textAlign={"center"} m={"1rem"} >Or</Typography>
@@ -74,7 +139,7 @@ const Login = () => {
                             )}
                             <TextField required fullWidth label="Password" type='password' margin='normal' variant='outlined' value={password.value} onChange={password.changeHandler} />
 
-                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} >
+                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleSignUp(e)} >
                                 SIGN UP
                             </Button>
                             <Typography textAlign={"center"} m={"1rem"} >Or</Typography>

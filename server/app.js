@@ -12,6 +12,8 @@ import { Server } from "socket.io";
 import { NEW_MESSAGE, NEW_MESSAGE_ALERT } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
+import cors from "cors"
+import { v2 as cloudinary } from "cloudinary"
 
 
 
@@ -27,6 +29,12 @@ export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "ABHISHEK_YADAV"
 export const userSocketIds = new Map()
 
 connectDB(mongoURI)
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUNDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 // createUser(10)
 
@@ -45,7 +53,10 @@ const io = new Server(server, {})
 
 app.use(express.json());
 app.use(cookieParser())
-
+app.use(cors({
+    origin: ["http://localhost:8001", "http://localhost:5173", "http://localhost:4173"],
+    credentials: true
+}))
 
 
 app.use("/user", userRoutes)
@@ -55,6 +66,10 @@ app.use("/admin", adminRoutes)
 
 app.get("/", (req, res) => {
     res.send("Hello World")
+})
+
+io.use((socket, next) => {
+
 })
 
 io.on("connection", (socket) => {
@@ -85,11 +100,11 @@ io.on("connection", (socket) => {
         }
 
         const membersSocket = getSockets(members)
-        io.to(membersSocket).emit(NEW_MESSAGE , {
+        io.to(membersSocket).emit(NEW_MESSAGE, {
             chatId,
-            message : messageForRealTime
+            message: messageForRealTime
         })
-        io.to(membersSocket).emit(NEW_MESSAGE_ALERT , {chatId})
+        io.to(membersSocket).emit(NEW_MESSAGE_ALERT, { chatId })
 
         try {
             await Message.create(messageForDB)
@@ -105,14 +120,6 @@ io.on("connection", (socket) => {
     })
 })
 
-
-// app.use((err, req, res, next) => {
-//     console.log(err.message , "52");
-//     res.status(err.status || 500).json({
-//         message: err.message || "Internal Server Error",
-//         statuscode: err.statuscode
-//     });
-// });
 
 app.use(errorMiddleware)
 

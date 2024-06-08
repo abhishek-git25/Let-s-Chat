@@ -1,6 +1,6 @@
 import { compare } from 'bcrypt';
 import { User } from '../models/user.js'
-import { cookieOptions, emitEvent, sendToken } from '../utils/features.js';
+import { cookieOptions, emitEvent, sendToken, uploadFilesToCloudinary } from '../utils/features.js';
 import { TryCatch } from '../middlewares/error.js';
 import { ErrorHandler } from '../utils/utilit.js';
 import { Chat } from '../models/chat.js';
@@ -9,33 +9,35 @@ import { NEW_REQUEST, REFETCH_CHATS } from '../constants/events.js';
 import { getOtherMembers } from '../lib/helper.js';
 
 
-const newUsers =  TryCatch(async (req, res , next) => {
+const newUsers = TryCatch(async (req, res, next) => {
 
-        const { name, username, password, bio } = req.body
-    
-        const file = req.file;
-    
-        if(!file) return next(new ErrorHandler("Please Upload Avatar"))
-    
-    
-        const avatar = {
-            public_id: "sdfsd",
-            url: "abc"
-        }
-    
-        const user = await User.create({
-            name,
-            username,
-            password,
-            bio,
-            avatar
-        })
-    
-        // res.status(201).json({ message: "User created successfully" })
-        sendToken(res, user, 201, "User Created")
-    
+    const { name, username, password, bio } = req.body
+
+    const file = req.file;
+
+    if (!file) return next(new ErrorHandler("Please Upload Avatar"))
+
+    const result = await uploadFilesToCloudinary([file])
+
+
+    const avatar = {
+        public_id: result[0].public_id,
+        url: result[0].secureUrl
     }
-) 
+
+    const user = await User.create({
+        name,
+        username,
+        password,
+        bio,
+        avatar
+    })
+
+    // res.status(201).json({ message: "User created successfully" })
+    sendToken(res, user, 201, "User Created")
+
+}
+)
 
 
 const login = TryCatch(async (req, res, next) => {
@@ -105,7 +107,7 @@ const searchUser = TryCatch(async (req, res) => {
     })
 })
 
-const sendFriendRequest = TryCatch(async (req, res) => {
+const sendFriendRequest = TryCatch(async (req, res, next) => {
     const { userId } = req.body;
 
     const request = await Request.findOne({

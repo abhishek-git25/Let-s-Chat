@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken";
 import { ErrorHandler } from "../utils/utilit.js";
 import { adminSecretKey } from "../app.js";
+import { TryCatch } from "./error.js";
 
-
-const isAthencticated = (req, res, next) => {
-
+const isAthencticated =  TryCatch((req, res, next) => {
     const token = req.cookies['lets_chat_token']
     if (!token) {
         return next(new ErrorHandler("Please login first", 401))
@@ -13,7 +12,7 @@ const isAthencticated = (req, res, next) => {
     const decodedData = jwt.verify(token, process.env.JWT_SECRET)
     req.user = decodedData._id
     next()
-}
+})
 
 const isAdminOnly = (req, res, next) => {
     const token = req.cookies['lets-chat-admin-token']

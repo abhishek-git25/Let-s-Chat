@@ -1,8 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { LayoutLoaders } from './components/layout/Loaders';
 import Groups from './pages/Groups';
+import axios from "axios"
+import { server } from './components/constants/config';
+import { useDispatch, useSelector } from "react-redux"
+import { userExists, userNotExist } from './redux/reducers/auth';
+import {Toaster} from 'react-hot-toast'
 
 
 const Home = lazy(() => import("./pages/home"))
@@ -19,34 +24,50 @@ const MessageManagement = lazy(() => import("./pages/admin/MessageManagement"))
 
 
 
-let user = true;
+// let user = true;
 
 function App() {
+
+  const { user, loader } = useSelector(state => state.auth)
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    axios.get(`${server}/user/me`,{ withCredentials : true })
+      .then((res) => dispatch(userExists(res.data.user)))
+      .catch((err) => dispatch(userNotExist()))
+  }, [dispatch])
+
+
+
+
   return (
     <>
-      <BrowserRouter>
-        <Suspense fallback={<LayoutLoaders/>} >
-          <Routes>
-            <Route element={<ProtectedRoute user={user} />} >
-              <Route path='/' element={<Home />} />
-              <Route path='/chat/:chatId' element={<Chat />} />
-              <Route path='/groups' element = {<Groups/>} />
-            </Route>
-            <Route path='/login' element={
-              <ProtectedRoute user={!user} redirect='/' >
-                <Login />
-              </ProtectedRoute>
-            } />
-            <Route path='/admin' element = {<AdminLogin/>}  />
-            <Route path='/admin/dashboard' element = {<Dashboard/>} />
-            <Route path='/admin/user-management' element = {<UserManagement/>} />
-            <Route path='/admin/messages' element = {<MessageManagement/>} />
-            <Route path='/admin/chat-management' element = {<ChatManagement/>} />
+      {loader ? <LayoutLoaders /> :
+        <BrowserRouter>
+          <Suspense fallback={<LayoutLoaders />} >
+            <Routes>
+              <Route element={<ProtectedRoute user={!user} />} >
+                <Route path='/' element={<Home />} />
+                <Route path='/chat/:chatId' element={<Chat />} />
+                <Route path='/groups' element={<Groups />} />
+              </Route>
+              <Route path='/login' element={
+                <ProtectedRoute user={user} redirect='/' >
+                  <Login />
+                </ProtectedRoute>
+              } />
+              <Route path='/admin' element={<AdminLogin />} />
+              <Route path='/admin/dashboard' element={<Dashboard />} />
+              <Route path='/admin/user-management' element={<UserManagement />} />
+              <Route path='/admin/messages' element={<MessageManagement />} />
+              <Route path='/admin/chat-management' element={<ChatManagement />} />
 
-            <Route path='*' element={<NotFound />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+              <Route path='*' element={<NotFound />} />
+            </Routes>
+          </Suspense>
+          <Toaster position='bottom-center'/>
+        </BrowserRouter>}
     </>
   );
 }

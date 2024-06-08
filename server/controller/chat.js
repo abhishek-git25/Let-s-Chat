@@ -63,7 +63,7 @@ const getMyChats = TryCatch(async (req, res, next) => {
     return res.status(201).json({
         success: true,
         chats: transformedChats,
-        message: "Group Created"
+        message: "Chats Fetched"
     })
 })
 

@@ -19,10 +19,13 @@ const errorMiddleware = (err, req, res, next) => {
         err.statusCode = 400
     }
 
-    return res.status(err.statusCode).json({
+    const response = {
         success: false,
-        message: envMode === "DEVELOPMENT"  ? err : err,
-    })
+        message: envMode === "DEVELOPMENT" ? err.message : err.message,
+        statusCode: err.statuscode
+    };
+
+    return res.status(err.statusCode).json(response)
 
 }
 

@@ -1,8 +1,14 @@
+import { Add as AddIcon, Group as GroupIcon, Logout as LogoutIcon, Menu as Menuicon, Notifications as NotificationIcon, Search as SearchIcon } from "@mui/icons-material"
 import { AppBar, Backdrop, Box, IconButton, Toolbar, Tooltip, Typography } from '@mui/material'
+import axios from 'axios'
 import React, { Suspense, lazy, useState } from 'react'
-import { orange } from '../constants/color'
-import { Menu as Menuicon, Search as SearchIcon, Add as AddIcon, Group as GroupIcon, Logout as LogoutIcon, Notifications as NotificationIcon } from "@mui/icons-material"
+import toast from 'react-hot-toast'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from "react-router-dom"
+import { userNotExist } from '../../redux/reducers/auth'
+import { setIsMobileMenuFriendly, setIsSearch } from '../../redux/reducers/misc'
+import { orange } from '../constants/color'
+import { server } from '../constants/config'
 
 const Search = lazy(() => import('../specific/Search'))
 const Notification = lazy(() => import('../specific/Notification'))
@@ -10,22 +16,24 @@ const NewGroups = lazy(() => import('../specific/NewGroup'))
 
 const Header = () => {
 
-  const [isMobile, setisMobile] = useState(false)
-  const [isSearch, setIsSearch] = useState(false)
+  // const [isSearch, setIsSearch] = useState(false)
   const [isNewGroup, setIsNewGroup] = useState(false)
   const [isNotification, setIsNotification] = useState(false)
 
 
+  const dispatch = useDispatch()
+
+  const { isSearch } = useSelector((state) => state.misc)
+
+
   const navigate = useNavigate()
 
-  const handleMobile = () => {
-    console.log("Mobile");
-    setisMobile((prev) => !prev)
+  const handleMobileOpen = () => {
+    dispatch(setIsMobileMenuFriendly(true))
   }
 
   const openSearchDialog = () => {
-
-    setIsSearch((prev) => !prev)
+    dispatch(setIsSearch(true))
   }
 
   const newGroup = () => {
@@ -41,8 +49,19 @@ const Header = () => {
     navigate('/groups')
   }
 
-  const logoutHandler = () => {
+  const logoutHandler = async () => {
     console.log("logout");
+
+    try {
+      const { data } = await axios.get(`${server}/user/logout`, { withCredentials: true })
+      dispatch(userNotExist())
+      toast.success(data.message)
+
+    } catch (error) {
+      toast.error(error?.response?.data?.message)
+    }
+
+
   }
 
 
@@ -55,7 +74,7 @@ const Header = () => {
               Let's Chat
             </Typography>
             <Box sx={{ display: { xs: "block", sm: "none" } }}>
-              <IconButton color='inherit' onClick={() => handleMobile()}>
+              <IconButton color='inherit' onClick={() => handleMobileOpen()}>
                 <Menuicon />
               </IconButton>
             </Box>
