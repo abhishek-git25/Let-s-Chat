@@ -1,8 +1,10 @@
 import { Avatar, Stack, Typography } from '@mui/material'
 import React from 'react'
 import { Face as FaceIcon, AlternateEmail as UsernameIcon, CalendarMonth as CalendarIcon } from '@mui/icons-material'
+import moment from 'moment';
 
-const Profile = () => {
+const Profile = ({ user }) => {
+  console.log(user , "6");
   return (
     <div>
       <Stack spacing={"2rem"} direction={"column"} alignItems={"center"} >
@@ -14,11 +16,12 @@ const Profile = () => {
             marginBottom: '1rem',
             border: "5px solid white"
           }}
+          src={user?.avatar?.url}
         />
-        <ProfileCard text={"abc"} heading={"Bio"}  />
-        <ProfileCard text={"Username"} heading={"@abc"} icon={<UsernameIcon/>} />
-        <ProfileCard text={"Name"} heading={"ABHISHEK YADAV"} icon={<FaceIcon/>} />
-        <ProfileCard text={"Joined"} heading={"15/03/24"} icon={<CalendarIcon/>} />
+        <ProfileCard text={user?.bio} heading={"Bio"} />
+        <ProfileCard text={user?.username} heading={"@abc"} icon={<UsernameIcon />} />
+        <ProfileCard text={user?.name} heading={"Name"} icon={<FaceIcon />} />
+        <ProfileCard text={"Joined"} heading={moment(user?.createdAt).fromNow()} icon={<CalendarIcon />} />
 
 
       </Stack>

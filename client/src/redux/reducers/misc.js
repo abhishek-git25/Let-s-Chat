@@ -47,4 +47,4 @@ const miscSlice = createSlice({
 })
 
 export default miscSlice
-export const { setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu } = miscSlice.actions
+export const { setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader } = miscSlice.actions

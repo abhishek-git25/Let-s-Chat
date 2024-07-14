@@ -14,7 +14,10 @@ const fileFormat = (url) => {
     return "file"
 }
 
-const transformImage = (url = "", width = 100) => url
+const transformImage = (url = "", width = 100) => {
+    let newUrl = url.replace("upload/", `upload/dpr_auto/w_${width}/`)
+    return newUrl
+}
 
 const getLastSevenDays = () => {
     const currentDate = moment()
@@ -28,4 +31,10 @@ const getLastSevenDays = () => {
     return last7Days;
 }
 
-export { fileFormat, transformImage, getLastSevenDays }
+const getOrSaveFromStorage = ({ key, value, get }) => {
+    if (get) {
+        return localStorage.getItem(key) ? JSON.parse(localStorage.getItem(key)) : null
+    } else localStorage.setItem(key, JSON.stringify(value))
+}
+
+export { fileFormat, transformImage, getLastSevenDays, getOrSaveFromStorage }

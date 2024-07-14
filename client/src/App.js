@@ -7,7 +7,8 @@ import axios from "axios"
 import { server } from './components/constants/config';
 import { useDispatch, useSelector } from "react-redux"
 import { userExists, userNotExist } from './redux/reducers/auth';
-import {Toaster} from 'react-hot-toast'
+import { Toaster } from 'react-hot-toast'
+import { SocketProvider } from './socket';
 
 
 const Home = lazy(() => import("./pages/home"))
@@ -33,10 +34,10 @@ function App() {
   const dispatch = useDispatch()
 
   useEffect(() => {
-    axios.get(`${server}/user/me`,{ withCredentials : true })
-      .then((res) => dispatch(userExists(res.data.user)))
+    axios.get(`${server}/user/me`, { withCredentials: true })
+      .then((res) => dispatch(userExists(res.data.data)))
       .catch((err) => dispatch(userNotExist()))
-  }, [dispatch])
+  }, [])
 
 
 
@@ -47,13 +48,13 @@ function App() {
         <BrowserRouter>
           <Suspense fallback={<LayoutLoaders />} >
             <Routes>
-              <Route element={<ProtectedRoute user={!user} />} >
+              <Route element={<SocketProvider><ProtectedRoute user={user} /></SocketProvider>} >
                 <Route path='/' element={<Home />} />
                 <Route path='/chat/:chatId' element={<Chat />} />
                 <Route path='/groups' element={<Groups />} />
               </Route>
               <Route path='/login' element={
-                <ProtectedRoute user={user} redirect='/' >
+                <ProtectedRoute user={!user} redirect='/' >
                   <Login />
                 </ProtectedRoute>
               } />
@@ -66,7 +67,7 @@ function App() {
               <Route path='*' element={<NotFound />} />
             </Routes>
           </Suspense>
-          <Toaster position='bottom-center'/>
+          <Toaster position='bottom-center' />
         </BrowserRouter>}
     </>
   );

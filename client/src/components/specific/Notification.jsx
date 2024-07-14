@@ -1,23 +1,57 @@
-import { Avatar, Button, Dialog, DialogTitle, ListItem, Stack, Typography } from '@mui/material'
+import { Avatar, Button, Dialog, DialogTitle, ListItem, Skeleton, Stack, Typography } from '@mui/material'
 import React, { memo } from 'react'
 
-import { sampleNotification } from '../constants/sampleData'
+import { useErrors } from '../../hooks/hook'
+import { useAcceptFrientRequestMutation, useGetNotificationsQuery } from '../../redux/api/api'
+import { useDispatch, useSelector } from 'react-redux'
+import { setIsNotification } from '../../redux/reducers/misc'
+import toast from 'react-hot-toast'
 
 const Notification = () => {
 
-  const friendRequestHandler = ({ _id, accept }) => {
-    console.log(_id);
+  const { isNotification } = useSelector((state) => state.misc)
+  const dispatch = useDispatch()
+
+  const { isLoading, data, isError, error } = useGetNotificationsQuery()
+
+  const [acceptRequest] = useAcceptFrientRequestMutation()
+
+  useErrors([{ error, isError }])
+
+  const friendRequestHandler = async ({ _id, accept }) => {
+    try {
+      const res = await acceptRequest({ requestId: _id, accept })
+      if (res.data.success) {
+        console.log("Use socket here");
+        toast.success(res.data.message)
+      } else {
+        toast.error(res.data.error || "Something went wrong !!")
+      }
+    } catch (error) {
+      // toast.error(error.response.data.message || "Something went wrong !!")
+      console.log(error);
+
+    }
   }
+
+  const closeHandler = () => {
+    dispatch(setIsNotification(false))
+  }
+
 
 
   return (
     <>
-      <Dialog open >
+      <Dialog open={isNotification} onClose={closeHandler} >
         <Stack p={{ xs: "1rem", sm: "2rem" }} maxWidth={"50rem"} >
-          <DialogTitle sx={{ fontWeight : "bold" }}>
+          <DialogTitle sx={{ fontWeight: "bold" }}>
             Notification
           </DialogTitle>
-          {sampleNotification.length > 0 ? sampleNotification.map((item) => <NotificationItem sender={item.sender} _id={item._id} handler={friendRequestHandler} />) : <Typography textAlign={"center"}>0 Notification</Typography>}
+          {isLoading ? <Skeleton /> :
+            <>
+              {data?.request?.length > 0 ? data.request.map((item) => <NotificationItem sender={item.sender} _id={item._id} handler={friendRequestHandler} />) : <Typography textAlign={"center"}>0 Notification</Typography>}
+            </>
+          }
 
         </Stack>
       </Dialog>
@@ -27,8 +61,8 @@ const Notification = () => {
 
 const NotificationItem = memo(({ sender, _id, handler }) => {
 
-  const { name , icon} = sender
-  console.log(icon , "31");
+  const { name, icon } = sender
+  console.log(icon, "31");
 
   return (
     <ListItem>
@@ -49,13 +83,13 @@ const NotificationItem = memo(({ sender, _id, handler }) => {
           }
         }} > */}
         <Stack direction={{
-          xs : "column",
-          sm : "row"
+          xs: "column",
+          sm: "row"
         }}>
-          <Button onClick={() => handler({ _id , accept : true })} >Accept</Button>
-          <Button color='error' onClick={() => handler({ _id , accept : false })}>Reject</Button>
+          <Button onClick={() => handler({ _id, accept: true })} >Accept</Button>
+          <Button color='error' onClick={() => handler({ _id, accept: false })}>Reject</Button>
         </Stack>
-          {/* <AddIcon /> */}
+        {/* <AddIcon /> */}
         {/* </IconButton> */}
       </Stack>
     </ListItem>

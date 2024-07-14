@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 
 const useErrors = (errors = []) => {
@@ -52,4 +52,54 @@ const useAsyncMutationHooks = (mutationHook) => {
     return [executeMutation, loading, data]
 }
 
-export { useErrors, useAsyncMutationHooks }
+const useSocketHandlers = (socket, handlers) => {
+
+    useEffect(() => {
+        Object.entries(handlers).forEach(([event, handlers]) => {
+            socket.on(event, handlers)
+        })
+
+        return () => {
+            Object.entries(handlers).forEach(([event, handlers]) => {
+                socket.off(event, handlers)
+            })
+        }
+    }, [socket, handlers])
+}
+
+const useInfiniteScroll = (containerRef, totalPages, currentPage, setCurrentPage) => {
+
+    const [isFetching, setIsFetching] = useState(false)
+
+    const handleScroll = useCallback(() => {
+        if (containerRef.current) {
+            const { scrollTop, clientHeight, scrollHeight } = containerRef.current
+            console.log(scrollTop , clientHeight , "77");
+            if (scrollTop >= clientHeight && !isFetching && currentPage < totalPages) {
+                console.log(79);
+                setIsFetching(true)
+            }
+        }
+    }, [containerRef, totalPages, currentPage, isFetching])
+    
+
+    useEffect(() => {
+        if (isFetching) {
+            setCurrentPage((prevPage) => prevPage + 1)
+            setIsFetching(false)
+        }
+    }, [isFetching, setCurrentPage])
+
+
+    useEffect(() => {
+        const container = containerRef.current
+        if (container) {
+            container.addEventListener('scroll', handleScroll)
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, [handleScroll, containerRef])
+
+    return [currentPage]
+}
+
+export { useErrors, useAsyncMutationHooks, useSocketHandlers, useInfiniteScroll }

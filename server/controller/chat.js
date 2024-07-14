@@ -1,10 +1,10 @@
-import { ALERT, NEW_ATTACHMENTS, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js";
+import { ALERT, NEW_MESSAGE, NEW_MESSAGE_ALERT, REFETCH_CHATS } from "../constants/events.js";
 import { getOtherMembers } from "../lib/helper.js";
 import { TryCatch } from "../middlewares/error.js";
 import { Chat } from "../models/chat.js";
 import { Message } from "../models/message.js";
 import { User } from "../models/user.js";
-import { deleteFilesFromCloudinary, emitEvent } from "../utils/features.js";
+import { deleteFilesFromCloudinary, emitEvent, uploadFilesToCloudinary } from "../utils/features.js";
 import { ErrorHandler } from "../utils/utilit.js";
 
 const newGroupChat = TryCatch(async (req, res, next) => {
@@ -33,39 +33,36 @@ const newGroupChat = TryCatch(async (req, res, next) => {
 })
 
 const getMyChats = TryCatch(async (req, res, next) => {
-
     const chats = await Chat.find({ members: req.user }).populate(
         "members",
-        "name username avatar"
-    )
+        "name avatar"
+    );
+
 
     const transformedChats = chats.map(({ _id, name, members, groupChat }) => {
-
-        const otherMembers = getOtherMembers(members, req.user)
-
+        const otherMember = getOtherMembers(members, req.user);
 
         return {
             _id,
             groupChat,
-            avatar: groupChat ? members.slice(0, 3).map(({ avatar }) => avatar.url) : [otherMembers.avatar.ur],
-            name: groupChat ? name : otherMembers.name,
+            avatar: groupChat
+                ? members.slice(0, 3).map(({ avatar }) => avatar.url)
+                : [otherMember.avatar.url],
+            name: groupChat ? name : otherMember.name,
             members: members.reduce((prev, curr) => {
                 if (curr._id.toString() !== req.user.toString()) {
-                    prev.push(curr._id)
+                    prev.push(curr._id);
                 }
-                return prev
+                return prev;
             }, []),
-            // lastMessage : chat.lastMessage
+        };
+    });
 
-        }
-    })
-
-    return res.status(201).json({
+    return res.status(200).json({
         success: true,
         chats: transformedChats,
-        message: "Chats Fetched"
-    })
-})
+    });
+});
 
 
 const getMyGroups = TryCatch(async (req, res, next) => {
@@ -206,6 +203,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
     const { chatId } = req.body;
 
+    console.log(req.files , chatId , "206");
 
 
     const [chat, me] = await Promise.all([Chat.findById(chatId), User.findById(req.user, "name")])
@@ -213,14 +211,14 @@ const sendAttachments = TryCatch(async (req, res, next) => {
     if (!chat) return next(new ErrorHandler("Chat not found", 404))
 
     const files = req.files || []
+    console.log(files , "214");
 
     if (files.length < 1) return next(new ErrorHandler("Please provide attachments", 400))
 
-    if (files.length < 6) return next(new ErrorHandler("Files can't be more than 5", 400))
+    if (files.length > 5) return next(new ErrorHandler("Files can't be more than 5", 400))
 
 
-    const attachments = []
-
+    const attachments = await uploadFilesToCloudinary(files)
 
     const messageForDB = {
         content: "",
@@ -239,7 +237,7 @@ const sendAttachments = TryCatch(async (req, res, next) => {
 
     const message = await Message.create(messageForDB)
 
-    emitEvent(req, NEW_ATTACHMENTS, chat.members, {
+    emitEvent(req, NEW_MESSAGE, chat.members, {
         message: messageRealTime,
         chatId
     })
@@ -257,9 +255,6 @@ const getChatDetails = TryCatch(async (req, res, next) => {
 
     if (req.query.populate === "true") {
         const chat = await Chat.findById(req.params.id).populate("members", "name avatar").lean()
-
-    console.log(chat , "261");
-
 
         if (!chat) return next(new ErrorHandler("Chat not found", 404))
 
@@ -391,15 +386,6 @@ const getMessages = TryCatch(async (req, res, next) => {
 
 
 export {
-    newGroupChat,
-    getMyChats,
-    getMyGroups,
-    addMembers,
-    removeMembers,
-    leaveGroup,
-    sendAttachments,
-    getChatDetails,
-    renameGroup,
-    deleteChat,
-    getMessages
-}
+    addMembers, deleteChat, getChatDetails, getMessages, getMyChats,
+    getMyGroups, leaveGroup, newGroupChat, removeMembers, renameGroup, sendAttachments
+};

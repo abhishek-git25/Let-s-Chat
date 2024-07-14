@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import jwt from "jsonwebtoken"
 import { v4 as uuid } from 'uuid'
 import { v2 as cloudinary } from "cloudinary"
-import { getBase64 } from "../lib/helper.js"
+import { getBase64, getSockets } from "../lib/helper.js"
 
 
 const cookieOptions = {
@@ -32,7 +32,9 @@ const sendToken = (res, user, code, message) => {
 }
 
 const emitEvent = (req, event, users, data) => {
-    console.log("emitting event", event);
+    const io = req.app.get("io")
+    const userSockets = getSockets(users)
+    io.to(userSockets).emit(event, data)
 }
 
 const uploadFilesToCloudinary = async (files = []) => {
@@ -53,7 +55,7 @@ const uploadFilesToCloudinary = async (files = []) => {
         const results = await Promise.all(uploadPromises)
         const formattedResult = results.map((item) => ({
             public_id: item.public_id,
-            secureUrl: item.secure_url
+            url: item.secure_url
         }))
 
         return formattedResult

@@ -18,11 +18,12 @@ const newUsers = TryCatch(async (req, res, next) => {
     if (!file) return next(new ErrorHandler("Please Upload Avatar"))
 
     const result = await uploadFilesToCloudinary([file])
+    console.log(result , "21");
 
 
     const avatar = {
         public_id: result[0].public_id,
-        url: result[0].secureUrl
+        url: result[0].url
     }
 
     const user = await User.create({
