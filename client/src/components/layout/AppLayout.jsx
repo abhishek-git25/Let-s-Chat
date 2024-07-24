@@ -10,7 +10,7 @@ import ChatList from '../specific/ChatList'
 import Profile from '../specific/Profile'
 import Header from './header'
 import { useSocket } from '../../socket'
-import { NEW_MESSAGE_ALERT, NEW_REQUEST } from '../constants/events'
+import { NEW_MESSAGE_ALERT, NEW_REQUEST, REFETCH_CHATS } from '../constants/events'
 import { incrementNotification, setNewMessageAlert } from '../../redux/reducers/chat'
 import { getOrSaveFromStorage } from '../../lib/features'
 
@@ -65,9 +65,14 @@ const AppLayout = (WrappedComponent) => {
                 dispatch(incrementNotification())
             }, [dispatch])
 
+            const refetchListener = useCallback(() => {
+                    refetch()
+                },[refetch])
+
             const eventHandlers = {
                 [NEW_MESSAGE_ALERT]: newMessageAlertHandler,
-                [NEW_REQUEST]: newRequestAlertHandler
+                [NEW_REQUEST]: newRequestAlertHandler,
+                [REFETCH_CHATS] : refetchListener
             }
 
             useSocketHandlers(socket, eventHandlers)

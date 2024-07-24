@@ -47,8 +47,9 @@ const api = createApi({
         }),
         chatDetails: builder.query({
             query: ({ chatId, populate = false }) => {
+                let id = chatId ? chatId : ""
 
-                let url = `/chat/${chatId}`
+                let url = `/chat/${id}`
 
                 if (populate) url += "?populate=true"
 
@@ -66,7 +67,7 @@ const api = createApi({
                 url: `/chat/message/${chatId}?page=${page}`,
                 credentials: "include"
             }),
-            keepUnusedDataFor : 0
+            keepUnusedDataFor: 0
         }),
         sendAttachments: builder.mutation({
             query: (data) => ({
@@ -75,9 +76,62 @@ const api = createApi({
                 credentials: "include",
                 body: data
             }),
+        }),
+        myGroups: builder.query({
+            query: () => ({
+                url: `/chat/my_groups`,
+                credentials: "include"
+            }),
+            providesTags: ["Chat"]
+        }),
 
-        })
+        availableFriends: builder.query({
+            query: (chatId) => ({
+                url: chatId ? `/user/getFriends/?chatId=${chatId}` : '/user/getFriends',
+                credentials: "include"
+            }),
+            providesTags: ["Chat"]
+        }),
 
+        newGroup: builder.mutation({
+            query: ({ name, members }) => ({
+                url: `/chat/new_group_chat`,
+                method: "POST",
+                credentials: "include",
+                body: { name, members }
+            }),
+            invalidatesTags: ["Chat"]
+        }),
+
+        renameGroup: builder.mutation({
+            query: ({ chatId, name }) => ({
+                url: `/chat/${chatId}`,
+                method: "PUT",
+                credentials: "include",
+                body: { name }
+            }),
+            invalidatesTags: ["Chat"]
+        }),
+
+        removeGroupMembers: builder.mutation({
+            query: ({ chatId, userId }) => ({
+                url: `/chat/remove_members`,
+                method: "PUT",
+                credentials: "include",
+                body: { chatId , userId }
+            }),
+            invalidatesTags: ["Chat"]
+        }),
+
+        addGroupMembers: builder.mutation({
+            query: ({ chatId, members }) => ({
+                url: `/chat/add_members`,
+                method: "PUT",
+                credentials: "include",
+                body: { chatId , members }
+            }),
+            invalidatesTags: ["Chat"]
+        }),
     })
 })
 
@@ -91,5 +145,11 @@ export const {
     useAcceptFrientRequestMutation,
     useChatDetailsQuery,
     useGetAllMessagesQuery,
-    useSendAttachmentsMutation
+    useSendAttachmentsMutation,
+    useMyGroupsQuery,
+    useAvailableFriendsQuery,
+    useNewGroupMutation,
+    useRenameGroupMutation,
+    useRemoveGroupMembersMutation,
+    useAddGroupMembersMutation
 } = api
