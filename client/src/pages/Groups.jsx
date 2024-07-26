@@ -1,5 +1,5 @@
 import { Add, Delete, Done, Edit, KeyboardBackspace, Menu } from '@mui/icons-material'
-import { Backdrop, Box, Button, Drawer, Grid, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
+import { Backdrop, Box, Button, CircularProgress, Drawer, Grid, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material'
 import React, { Suspense, lazy, memo, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { bgGradient, mateBlack } from '../components/constants/color'
@@ -8,7 +8,7 @@ import AvatarCard from '../components/shared/AvatarCard'
 import UserItem from '../components/shared/UserItem'
 import { Link } from '../components/styles/StyledComponents'
 import { useAsyncMutationHooks, useErrors } from '../hooks/hook'
-import { useAddGroupMembersMutation, useChatDetailsQuery, useMyGroupsQuery, useRemoveGroupMembersMutation, useRenameGroupMutation } from '../redux/api/api'
+import { useAddGroupMembersMutation, useChatDetailsQuery, useDeleteChatMutation, useMyGroupsQuery, useRemoveGroupMembersMutation, useRenameGroupMutation } from '../redux/api/api'
 import { useDispatch, useSelector } from 'react-redux'
 import { setIsAddMember } from '../redux/reducers/misc'
 
@@ -26,6 +26,7 @@ const Groups = () => {
     const [groupNameUpdatedValue, setgroupNameUpdatedValue] = useState('')
     const [confirmDeleteDialog, setConfirmDeleteDialog] = useState(false)
     const [members, setMembers] = useState([])
+    const [isDeleted, setIsDeleted] = useState(false)
     const myGroups = useMyGroupsQuery()
     const dispatch =  useDispatch()
 
@@ -34,7 +35,7 @@ const Groups = () => {
 
     const [updateGroupName, isLoadingGroupName] = useAsyncMutationHooks(useRenameGroupMutation)
     const [removeMember, isLoadingRemove] = useAsyncMutationHooks(useRemoveGroupMembersMutation)
-
+    const [deleteGroup, isLoadingDeleteGroup] = useAsyncMutationHooks(useDeleteChatMutation)
 
 
 
@@ -84,16 +85,19 @@ const Groups = () => {
             setgroupNameUpdatedValue("")
             setMembers([])
             setIsEdit(false)
+            setIsDeleted(false)
         }
-    }, [groupDetails?.data])
+    }, [groupDetails?.data , isDeleted])
 
     const confirmDeleteHandler = () => {
-        console.log("confirm delete");
         setConfirmDeleteDialog(true)
     }
 
     const deleteHandler = () => {
-        setConfirmDeleteDialog(false)
+        deleteGroup("Deleting..." , chatId)
+        closeConfirmDeletHandler()
+        setIsDeleted(true)
+        navigate("/groups")
     }
 
 
@@ -227,7 +231,7 @@ const Groups = () => {
                         height={"50vh"}
                         overflow={"auto"}
                     >
-                        {members?.map((item) => {
+                        {isLoadingRemove ? <CircularProgress/>  : members?.map((item) => {
                             return <UserItem
                                 user={item}
                                 key={item._id}

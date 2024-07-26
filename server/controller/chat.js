@@ -373,6 +373,10 @@ const getMessages = TryCatch(async (req, res, next) => {
         Message.countDocuments({ chat: chatId })
     ])
 
+    if(!chat.members.includes(req.user.toString())){
+        return next(new ErrorHandler("You are not allowed to access this chat"))
+    }
+
 
     const totalPages = Math.ceil(totalMessageCount / limit)
 

@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux'
 import { setIsFileMenu } from '../redux/reducers/misc'
 import { removeMessageAlert } from '../redux/reducers/chat'
 import { TypingLoader } from '../components/layout/Loaders'
+import { useNavigate } from 'react-router-dom'
 
 const Chat = ({ chatId, user }) => {
 
@@ -23,6 +24,7 @@ const Chat = ({ chatId, user }) => {
   const containerRef = useRef(null)
   const typingTimeOut = useRef(null)
   const bottomRef = useRef(null)
+  const navigate = useNavigate()
 
 
   const [messages, setMessages] = useState("")
@@ -61,12 +63,15 @@ const Chat = ({ chatId, user }) => {
   }, [chatId])
 
   useEffect(() => {
+    if (!chatDetails?.data?.chat) return navigate("/")
+  }, [chatDetails.data])
+
+  useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [messageList , messages])
+  }, [messageList, messages])
 
-  console.log(chatId , "69");
 
   const newMessages = useCallback((data) => {
     if (data.chatId !== chatId) return
@@ -84,21 +89,21 @@ const Chat = ({ chatId, user }) => {
     setUserTyping(false)
   }, [chatId])
 
-  const alertListener = useCallback((data) =>{
+  const alertListener = useCallback((data) => {
     const messageForAlert = {
-      content : data,
-      sender : {
-        _id : Math.random(),
-        name : "Admin"
+      content: data,
+      sender: {
+        _id: Math.random(),
+        name: "Admin"
       },
-      chat : chatId,
-      createdAt : new Date.toISOString()
+      chat: chatId,
+      createdAt: new Date.toISOString()
     }
-    setMessageList((prev) => [...prev , messageForAlert])
-  },[])
+    setMessageList((prev) => [...prev, messageForAlert])
+  }, [])
 
   const eventHandler = {
-    [ALERT] : alertListener,
+    [ALERT]: alertListener,
     [NEW_MESSAGE]: newMessages,
     [START_TYPING]: startTypingListener,
     [STOP_TYPING]: stopTypingListener

@@ -42,9 +42,12 @@ const miscSlice = createSlice({
         },
         setIsUploadingLoader: (state, action) => {
             state.uploadingLoader = action.payload
+        },
+        setSelectedDeleteChat : (state , action) =>{
+            state.selectedDeleteChat  = action.payload
         }
     }
 })
 
 export default miscSlice
-export const { setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader } = miscSlice.actions
+export const { setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader,setSelectedDeleteChat } = miscSlice.actions
