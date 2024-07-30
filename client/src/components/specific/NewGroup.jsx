@@ -1,13 +1,13 @@
 import { useInputValidation } from '6pp'
 import { Button, Dialog, DialogTitle, Skeleton, Stack, TextField } from '@mui/material'
 import React, { useState } from 'react'
+import toast from 'react-hot-toast'
+import { useDispatch, useSelector } from 'react-redux'
+import { useAsyncMutationHooks, useErrors } from '../../hooks/hook'
+import { useAvailableFriendsQuery, useNewGroupMutation } from '../../redux/api/api'
+import { setIsNewGroup } from '../../redux/reducers/misc'
 import { sampleUsers } from "../constants/sampleData"
 import UserItem from '../shared/UserItem'
-import { useAvailableFriendsQuery, useNewGroupMutation } from '../../redux/api/api'
-import { useAsyncMutationHooks, useErrors } from '../../hooks/hook'
-import { useDispatch, useSelector } from 'react-redux'
-import { setIsNewGroup } from '../../redux/reducers/misc'
-import toast from 'react-hot-toast'
 
 const NewGroup = () => {
 

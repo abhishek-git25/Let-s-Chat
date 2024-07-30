@@ -6,10 +6,10 @@ import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from "react-router-dom"
 import { userNotExist } from '../../redux/reducers/auth'
+import { resetNotification } from "../../redux/reducers/chat"
 import { setIsMobileMenuFriendly, setIsNewGroup, setIsNotification, setIsSearch } from '../../redux/reducers/misc'
 import { orange } from '../constants/color'
 import { server } from '../constants/config'
-import { resetNotification } from "../../redux/reducers/chat"
 
 const Search = lazy(() => import('../specific/Search'))
 const Notification = lazy(() => import('../specific/Notification'))

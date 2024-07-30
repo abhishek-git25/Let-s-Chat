@@ -90,8 +90,10 @@ const Chat = ({ chatId, user }) => {
   }, [chatId])
 
   const alertListener = useCallback((data) => {
+
+    if(data.chatId !== chatId) return
     const messageForAlert = {
-      content: data,
+      content: data.message,
       sender: {
         _id: Math.random(),
         name: "Admin"
@@ -99,7 +101,7 @@ const Chat = ({ chatId, user }) => {
       chat: chatId,
       createdAt: new Date.toISOString()
     }
-    setMessageList((prev) => [...prev, messageForAlert])
+    setMessageList((prev) => [...prev,  messageForAlert])
   }, [])
 
   const eventHandler = {

@@ -1,17 +1,20 @@
+import { Delete, ExitToApp } from '@mui/icons-material'
 import { Menu, Stack, Typography } from '@mui/material'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { setIsDeleteMenu } from '../../redux/reducers/misc'
-import { Delete, ExitToApp } from '@mui/icons-material'
 import { useNavigate } from 'react-router-dom'
 import { useAsyncMutationHooks } from '../../hooks/hook'
-import { useDeleteChatMutation } from '../../redux/api/api'
+import { useDeleteChatMutation, useLeaveGroupMutation } from '../../redux/api/api'
+import { setIsDeleteMenu } from '../../redux/reducers/misc'
 
 const DeleteChatMenu = ({ dispatch, deleteOptionAnchor }) => {
 
     const navigate = useNavigate()
 
-    const [deleteChat,_ , deleteChatData] = useAsyncMutationHooks(useDeleteChatMutation)
+    const [deleteChat,_, deleteChatData] = useAsyncMutationHooks(useDeleteChatMutation)
+
+    const [leaveGroup,__, leaveGroupData] = useAsyncMutationHooks(useLeaveGroupMutation)
+
 
     const { isDeleteMenu, selectedDeleteChat } = useSelector((state) => state.misc)
 
@@ -24,8 +27,9 @@ const DeleteChatMenu = ({ dispatch, deleteOptionAnchor }) => {
         deleteOptionAnchor = null
     }
 
-    const leaveGroup = () => {
-        console.log("Leave Group");
+    const leaveGroupHandler = () => {
+        closeHandler()
+        leaveGroup("Exiting Group..." , selectedDeleteChat.chatId)
     }
 
     const deleteChatHandler = () => {
@@ -34,10 +38,10 @@ const DeleteChatMenu = ({ dispatch, deleteOptionAnchor }) => {
     }
 
     useEffect(() => {
-        if(deleteChatData){
+        if(deleteChatData || leaveGroupData){
             navigate("/")
         }
-    }, [deleteChatData])
+    }, [deleteChatData , leaveGroupData])
 
 
     return (
@@ -51,7 +55,7 @@ const DeleteChatMenu = ({ dispatch, deleteOptionAnchor }) => {
                     direction={"row"}
                     alignItems={"center"}
                     spacing={"0.5rem"}
-                    onClick={isGroup ? leaveGroup : deleteChatHandler}
+                    onClick={isGroup ? leaveGroupHandler : deleteChatHandler}
                 >
                     {isGroup ? <><ExitToApp /><Typography>Leave Group</Typography></> : <> <Delete /> <Typography>Delete Chat</Typography> </>}
                 </Stack>

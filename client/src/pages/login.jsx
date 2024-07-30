@@ -1,18 +1,19 @@
-import React, { useState } from 'react'
-import { Container, Paper, Typography, TextField, Button, Stack, Avatar, IconButton } from '@mui/material'
-import { CameraAlt as CameraAltIcon } from '@mui/icons-material'
-import { VisuallyHiddenInput } from '../components/styles/StyledComponents'
 import { useFileHandler, useInputValidation } from '6pp'
-import { usernameValidator } from '../utils/validators'
+import { CameraAlt as CameraAltIcon } from '@mui/icons-material'
+import { Avatar, Button, Container, IconButton, Paper, Stack, TextField, Typography } from '@mui/material'
 import axios from 'axios'
-import { server } from '../components/constants/config'
-import { useDispatch } from 'react-redux'
-import { userExists } from '../redux/reducers/auth'
+import React, { useState } from 'react'
 import toast from 'react-hot-toast'
+import { useDispatch } from 'react-redux'
+import { server } from '../components/constants/config'
+import { VisuallyHiddenInput } from '../components/styles/StyledComponents'
+import { userExists } from '../redux/reducers/auth'
+import { usernameValidator } from '../utils/validators'
 
 const Login = () => {
 
     const [login, setLogin] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
     const name = useInputValidation()
     const username = useInputValidation("", usernameValidator)
     const password = useInputValidation()
@@ -23,8 +24,11 @@ const Login = () => {
     const dispatch = useDispatch()
 
     const handleLogin = async (e) => {
-
+        setIsLoading(true)
         e.preventDefault()
+
+        const toastId = toast.loading("Logging in...")
+
         const config = {
             withCredentials: true,
             headers: {
@@ -39,15 +43,20 @@ const Login = () => {
             },
                 config
             )
-            dispatch(userExists(true))
-            toast.success(data.message)
+            dispatch(userExists(data.user))
+            toast.success(data.message, { id: toastId })
         } catch (error) {
-            toast.error(error?.response?.data?.message)
+            toast.error(error?.response?.data?.message, { id: toastId })
+        } finally {
+            setIsLoading(false)
         }
     }
 
     const handleSignUp = async (e) => {
+        setIsLoading(true)
         e.preventDefault()
+
+        const toastId = toast.loading("Signing up...")
         const formData = new FormData()
         formData.append("avatar", avatar.file)
         formData.append("name", name.value)
@@ -67,10 +76,13 @@ const Login = () => {
                 `${server}/user/new`,
                 formData, config
             )
-            dispatch(userExists(true))
-            toast.success(data.message)
+            dispatch(userExists(data.user))
+            toast.success(data.message, { id: toastId })
         } catch (error) {
-            toast.error(error?.response?.data?.message)
+            toast.error(error?.response?.data?.message, { id: toastId })
+        } finally {
+            setIsLoading(false)
+
         }
 
 
@@ -96,11 +108,11 @@ const Login = () => {
                         <form style={{ width: "100%", marginTop: "1rem" }} >
                             <TextField required fullWidth label="Username" margin='normal' variant='outlined' value={username.value} onChange={username.changeHandler} />
                             <TextField required fullWidth label="Password" type='password' margin='normal' variant='outlined' value={password.value} onChange={password.changeHandler} />
-                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleLogin(e)} >
+                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleLogin(e)} disabled={isLoading} >
                                 Login
                             </Button>
                             <Typography textAlign={"center"} m={"1rem"} >Or</Typography>
-                            <Button sx={{ marginTop: "1rem" }} fullWidth variant='text' onClick={() => setLogin(false)} >
+                            <Button sx={{ marginTop: "1rem" }} fullWidth variant='text' onClick={() => setLogin(false)} disabled={isLoading} >
                                 Sign In Instead
                             </Button>
                         </form>
@@ -139,11 +151,11 @@ const Login = () => {
                             )}
                             <TextField required fullWidth label="Password" type='password' margin='normal' variant='outlined' value={password.value} onChange={password.changeHandler} />
 
-                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleSignUp(e)} >
+                            <Button color='primary' type='submit' fullWidth variant='contained' sx={{ marginTop: "1rem" }} onClick={(e) => handleSignUp(e)} disabled={isLoading} >
                                 SIGN UP
                             </Button>
                             <Typography textAlign={"center"} m={"1rem"} >Or</Typography>
-                            <Button sx={{ marginTop: "1rem" }} fullWidth variant='text' onClick={() => setLogin(true)} >
+                            <Button sx={{ marginTop: "1rem" }} fullWidth variant='text' onClick={() => setLogin(true)} disabled={isLoading} >
                                 Login Instead
                             </Button>
                         </form>

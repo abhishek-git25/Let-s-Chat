@@ -1,5 +1,5 @@
-import React from 'react'
 import { Stack } from '@mui/material'
+import React from 'react'
 import ChatItem from '../shared/ChatItem'
 
 const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessageAlerts = [{
@@ -14,6 +14,7 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
                 const newMessage = newMessageAlerts.find((alert) => parseInt(alert.chatId) === parseInt(_id))
                 const isOnline = members.some((member) => onLineUsers.includes(_id))
 
+
                 return <ChatItem
                     index={index}
                     isOnline={isOnline}
@@ -23,7 +24,7 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
                     groupChat={groupChat}
                     name={name}
                     members={members}
-                    sameSender={parseInt(chatId) === parseInt(_id)}
+                    sameSender={chatId === _id}
                     handleDeleteChat={handleDeletChat} />
             })}
         </Stack>

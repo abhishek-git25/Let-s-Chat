@@ -154,7 +154,12 @@ const removeMembers = TryCatch(async (req, res, next) => {
 
     await chat.save()
 
-    emitEvent(req, ALERT, chat.members, `${usersThatWillBeRemoved.name} has been removed from the group`)
+    emitEvent(req, ALERT, chat.members, 
+        {
+            message : `${usersThatWillBeRemoved.name} has been removed from the group`,
+            chatId
+        }
+    )
 
     emitEvent(req, REFETCH_CHATS, chat.members);
 
@@ -188,13 +193,13 @@ const leaveGroup = TryCatch(async (req, res, next) => {
     const [user] = await Promise.all([User.findById(req.user, "name"), chat.save()])
 
 
-    emitEvent(req, ALERT, chat.members, `User ${user.name} has left the group`)
+    emitEvent(req, ALERT, chat.members, { chatId , message : `User ${user.name} has left the group` })
     emitEvent(req, REFETCH_CHATS, chat.members);
 
 
     return res.status(200).json({
         success: true,
-        message: "Members removed sucessfully"
+        message: "You Left the Chat"
     })
 })
 
@@ -372,6 +377,15 @@ const getMessages = TryCatch(async (req, res, next) => {
             .lean(),
         Message.countDocuments({ chat: chatId })
     ])
+
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) return next(new ErrorHandler("Chat not found", 404));
+  
+    if (!chat.members.includes(req.user.toString()))
+      return next(
+        new ErrorHandler("You are not allowed to access this chat", 403)
+      );
 
     if(!chat.members.includes(req.user.toString())){
         return next(new ErrorHandler("You are not allowed to access this chat"))
