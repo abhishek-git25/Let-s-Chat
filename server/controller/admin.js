@@ -191,6 +191,8 @@ const getDashBoardStats = TryCatch(async (req, res) => {
         chartMessage: last7DaysMessage
     }
 
+    console.log(stats , "194");
+
 
     return res.status(200).json({
         success: true,

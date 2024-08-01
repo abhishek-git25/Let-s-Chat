@@ -2,7 +2,7 @@ import { AttachFile, Send } from '@mui/icons-material'
 import { IconButton, Skeleton, Stack } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { orange } from '../components/constants/color'
-import { ALERT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events'
+import { ALERT, CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events'
 import FileMenu from '../components/dialogs/FileMenu'
 import AppLayout from '../components/layout/AppLayout'
 import MessageComponent from '../components/shared/MessageComponent'
@@ -54,11 +54,14 @@ const Chat = ({ chatId, user }) => {
   ]
 
   useEffect(() => {
+    socket.emit(CHAT_JOINED , user._id)
     dispatch(removeMessageAlert(chatId))
     return () => {
       setMessages("")
       setMessageList([])
       setPage(1)
+    socket.emit(CHAT_LEFT , user._id)
+
     }
   }, [chatId])
 

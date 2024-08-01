@@ -9,7 +9,7 @@ import { createServer } from 'http'
 import { v4 as uuid } from 'uuid'
 import { connectDB } from "./utils/features.js";
 import { Server } from "socket.io";
-import { NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
+import { CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors"
@@ -126,6 +126,14 @@ io.on("connection", (socket) => {
         const membersSocket = getSockets(members)
         socket.to(membersSocket).emit(STOP_TYPING , { chatId })
     } )
+
+    socket.on(CHAT_JOINED , (userId) => {
+        console.log("Joined" , userId);
+    })
+
+    socket.on(CHAT_LEFT , (userId) => {
+        console.log("Left" , userId);
+    })
 
     socket.on("disconnect", (socket) => {
         console.log("user disconnected");

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
-import AdminLayout from '../../components/layout/AdminLayout'
-import { Avatar, Box, Stack } from '@mui/material';
-import Table from '../../components/shared/Table';
-import { dashboardData } from '../../components/constants/sampleData';
-import { fileFormat, transformImage } from '../../lib/features';
+import { Avatar, Box, Skeleton, Stack } from '@mui/material';
 import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import AdminLayout from '../../components/layout/AdminLayout';
 import RenderAttachment from "../../components/shared/RenderAttachment";
+import Table from '../../components/shared/Table';
+import { fileFormat, transformImage } from '../../lib/features';
+import { useAllMessagesQuery } from '../../redux/api/adminApi';
 
 const columns = [
   {
@@ -25,9 +25,9 @@ const columns = [
         attachments.map((attachment) => {
           const url = attachment.url;
           const file = fileFormat(url)
-          return <Box sx={{ padding : "2rem 0"}}>
-            <a href={url}  download  target='_blank' style={{color : "black"}} >
-              {RenderAttachment(file , url)}
+          return <Box sx={{ padding: "2rem 0" }}>
+            <a href={url} download target='_blank' style={{ color: "black" }} >
+              {RenderAttachment(file, url)}
             </a>
           </Box>
         }) : "No Attachment"
@@ -75,25 +75,34 @@ const columns = [
 
 const MessageManagement = () => {
 
+
+  const { isLoading, isError, data, errors } = useAllMessagesQuery()
+
   const [rows, setRows] = useState([])
 
   useEffect(() => {
-    setRows(dashboardData.messages.map((msg) => ({
-      ...msg,
-      id: msg._id,
-      sender: {
-        name: msg.sender.name,
-        avatar: transformImage(msg.sender.avatar, 50),
-        createdAt: moment(msg.createdAt).format("MMMM Do YYYY, h:mm:ss a")
-      }
-    })))
-  }, [])
+
+    if (data) {
+      setRows(data.messages.map((msg) => ({
+        ...msg,
+        id: msg._id,
+        sender: {
+          name: msg.sender.name,
+          avatar: transformImage(msg.sender.avatar, 50),
+          createdAt: moment(msg.createdAt).format("MMMM Do YYYY, h:mm:ss a")
+        }
+      })))
+    }
+
+  }, [data])
 
 
 
   return (
     <AdminLayout>
-      <Table columns={columns} rows={rows} heading={"All Messages"} rowHeight={200}  />
+      {isLoading ? <Skeleton  height={"100vh"} /> :
+        <Table columns={columns} rows={rows} heading={"All Messages"} rowHeight={200} />
+      }
     </AdminLayout>
   )
 }
