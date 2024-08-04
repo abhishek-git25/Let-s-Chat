@@ -21,6 +21,7 @@ const Chat = ({ chatId, user }) => {
 
 
 
+
   const containerRef = useRef(null)
   const typingTimeOut = useRef(null)
   const bottomRef = useRef(null)
@@ -54,16 +55,17 @@ const Chat = ({ chatId, user }) => {
   ]
 
   useEffect(() => {
-    socket.emit(CHAT_JOINED , user._id)
+    socket.emit(CHAT_JOINED, { userId: user._id, members })
     dispatch(removeMessageAlert(chatId))
     return () => {
       setMessages("")
       setMessageList([])
       setPage(1)
-    socket.emit(CHAT_LEFT , user._id)
+      socket.emit(CHAT_LEFT, { userId: user._id, members })
 
     }
   }, [chatId])
+ 
 
   useEffect(() => {
     if (!chatDetails?.data?.chat) return navigate("/")
@@ -94,7 +96,7 @@ const Chat = ({ chatId, user }) => {
 
   const alertListener = useCallback((data) => {
 
-    if(data.chatId !== chatId) return
+    if (data.chatId !== chatId) return
     const messageForAlert = {
       content: data.message,
       sender: {
@@ -104,7 +106,7 @@ const Chat = ({ chatId, user }) => {
       chat: chatId,
       createdAt: new Date.toISOString()
     }
-    setMessageList((prev) => [...prev,  messageForAlert])
+    setMessageList((prev) => [...prev, messageForAlert])
   }, [])
 
   const eventHandler = {

@@ -9,7 +9,7 @@ import { createServer } from 'http'
 import { v4 as uuid } from 'uuid'
 import { connectDB } from "./utils/features.js";
 import { Server } from "socket.io";
-import { CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, NEW_MESSAGE_ALERT, START_TYPING, STOP_TYPING } from "./constants/events.js";
+import { CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USER, START_TYPING, STOP_TYPING } from "./constants/events.js";
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import cors from "cors"
@@ -29,6 +29,7 @@ const port = process.env.PORT || 3000
 export const envMode = process.env.NODE_ENV.trim() || "PRODUCTION"
 export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "ABHISHEK_YADAV"
 export const userSocketIds = new Map()
+export const onlineUsers = new Set()
 
 connectDB(mongoURI)
 
@@ -127,18 +128,28 @@ io.on("connection", (socket) => {
         socket.to(membersSocket).emit(STOP_TYPING , { chatId })
     } )
 
-    socket.on(CHAT_JOINED , (userId) => {
-        console.log("Joined" , userId);
+    socket.on(CHAT_JOINED , ({userId , members}) => {
+        console.log(userId , "132");
+        
+        onlineUsers.add(userId.toString())
+
+        const membersSocket = getSockets(members)
+        io.to(membersSocket).emit(ONLINE_USER , Array.from(onlineUsers))
     })
 
-    socket.on(CHAT_LEFT , (userId) => {
-        console.log("Left" , userId);
+    socket.on(CHAT_LEFT , ({userId , members }) => {
+        onlineUsers.delete(userId.toString())
+        const membersSocket = getSockets(members)
+        io.to(membersSocket).emit(ONLINE_USER , Array.from(onlineUsers))
     })
 
-    socket.on("disconnect", (socket) => {
-        console.log("user disconnected");
-        userSocketIds.delete(user._id.toString())
-    })
+    
+
+  socket.on("disconnect", () => {
+    userSocketIds.delete(user._id.toString());
+    onlineUsers.delete(user._id.toString());
+    socket.broadcast.emit(ONLINE_USER, Array.from(onlineUsers));
+  });
 
 })
 

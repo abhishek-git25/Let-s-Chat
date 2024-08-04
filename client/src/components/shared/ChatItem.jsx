@@ -10,6 +10,9 @@ const ChatItem = ({ avatar = [], name, _id, groupChat = false, sameSender, isOnl
         handleDeleteChat(e, _id, groupChat)
     }
 
+    console.log(isOnline , "13");
+    
+    
 
     return (
         <Link to={`/chat/${_id}`} onContextMenu={handleNavigation} sx={{ padding: 0 }}>
