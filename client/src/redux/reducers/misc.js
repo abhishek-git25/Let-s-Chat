@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+
 const initialState = {
     isNewGroup: false,
     isNotification: false,
@@ -12,7 +13,16 @@ const initialState = {
     selectedDeleteChat: {
         chatId: "",
         groupChat: false
-    }
+    },
+    isCall: false,
+    stream: "",
+    caller: "",
+    callAccepted: false,
+    callEnded: false,
+    callerName: "",
+    calleeName: "",
+    callee : "",
+    receivingCall : false
 }
 
 const miscSlice = createSlice({
@@ -43,11 +53,40 @@ const miscSlice = createSlice({
         setIsUploadingLoader: (state, action) => {
             state.uploadingLoader = action.payload
         },
-        setSelectedDeleteChat : (state , action) =>{
-            state.selectedDeleteChat  = action.payload
+        setSelectedDeleteChat: (state, action) => {
+            state.selectedDeleteChat = action.payload
+        },
+        setIsCall: (state, action) => {
+            state.isCall = action.payload
+        },
+        setStream: (state, action) => {
+            state.stream = action.payload
+        },
+        setCaller: (state, action) => {
+            state.caller = action.payload
+        },
+        setCallAccepted: (state, action) => {
+            state.callAccepted = action.payload
+        },
+        setCallEnded: (state, action) => {
+            state.callEnded = action.payload
+        },
+        setCallerName: (state, action) => {
+            state.callerName = action.payload
+        },
+        setCalleeName: (state, action) => {
+            state.calleeName = action.payload
+        },
+        setRecievingCall : (state , action) => {
+            state.receivingCall = action.payload
+        },
+        setCallee : (state, action) => {
+            state.callee = action.payload
         }
+
+
     }
 })
 
 export default miscSlice
-export const { setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader,setSelectedDeleteChat } = miscSlice.actions
+export const { setCalleeName, setStream, setCaller, setCallAccepted, setCallEnded, setCallerName, setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader, setSelectedDeleteChat, setIsCall,setCallee,setRecievingCall } = miscSlice.actions

@@ -10,6 +10,7 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
 
     console.log(onLineUsers , "11");
     
+    
 
     return (
         <Stack width={w} direction={"column"} overflow={"auto"} height={"100%"} >
@@ -17,9 +18,6 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
                 const { avatar, _id, name, groupChat, members } = data
                 const newMessage = newMessageAlerts.find((alert) => parseInt(alert.chatId) === parseInt(_id))
                 const isOnline = members.some((member) => onLineUsers.includes(member))
-                {console.log(isOnline , "16")}
-
-
                 return <ChatItem
                     index={index}
                     isOnline={isOnline}

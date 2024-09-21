@@ -1,4 +1,4 @@
-import { AttachFile, Send } from '@mui/icons-material'
+import { AttachFile, Call, Send, VideoCall } from '@mui/icons-material'
 import { IconButton, Skeleton, Stack } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { orange } from '../components/constants/color'
@@ -12,7 +12,7 @@ import { useChatDetailsQuery, useGetAllMessagesQuery } from '../redux/api/api'
 import { useSocket } from '../socket'
 import { useInfiniteScrollTop } from '6pp'
 import { useDispatch } from 'react-redux'
-import { setIsFileMenu } from '../redux/reducers/misc'
+import { setIsCall, setIsFileMenu } from '../redux/reducers/misc'
 import { removeMessageAlert } from '../redux/reducers/chat'
 import { TypingLoader } from '../components/layout/Loaders'
 import { useNavigate } from 'react-router-dom'
@@ -65,7 +65,7 @@ const Chat = ({ chatId, user }) => {
 
     }
   }, [chatId])
- 
+
 
   useEffect(() => {
     if (!chatDetails?.data?.chat) return navigate("/")
@@ -126,6 +126,10 @@ const Chat = ({ chatId, user }) => {
     setFileMenuAnchor(e.currentTarget)
   }
 
+  const handleCall = () =>{
+    dispatch(setIsCall(true))
+  }
+
 
   const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(containerRef, getOldMessageChunk?.data?.totalPages, page, setPage, getOldMessageChunk?.data?.messages)
 
@@ -159,13 +163,21 @@ const Chat = ({ chatId, user }) => {
 
   return chatDetails.isLoading ? (<Skeleton />) : (
     <>
+      <Stack direction={"row"} justifyContent={"end"}  padding={"1rem"}  position={"relative"} width={"100%"} background = {"white"} height={"10%"}>
+      <IconButton sx={{ position : "absolute",marginRight : "4rem" }} onClick={handleCall} >
+        <Call/>
+      </IconButton>
+        <IconButton sx={{ position : "absolute" }} onClick={handleCall}>
+          <VideoCall />
+        </IconButton>
+      </Stack>
       <Stack
         ref={containerRef}
         boxSizing={"border-box"}
         padding={"1rem"}
         spacing={"1rem"}
         bgcolor={"rgba(0,0,0,0.1)"}
-        height={"90%"}
+        height={"80%"}
         sx={{
           overflowX: "hidden",
           overflowY: "auto"
