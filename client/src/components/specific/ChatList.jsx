@@ -7,9 +7,6 @@ const ChatList = ({ w = "100%", chats = [], chatId, onLineUsers = [], newMessage
     count: 0,
 }], handleDeletChat }) => {
 
-
-    console.log(onLineUsers , "11");
-    
     
 
     return (

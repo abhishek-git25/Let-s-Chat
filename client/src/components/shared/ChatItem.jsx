@@ -1,23 +1,23 @@
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, makeStyles, Stack, Typography } from '@mui/material'
 import React, { memo } from 'react'
 import { Link } from '../styles/StyledComponents'
 import AvatarCard from './AvatarCard'
 
 
+
+
 const ChatItem = ({ avatar = [], name, _id, groupChat = false, sameSender, isOnline, newMessage, index = 0, handleDeleteChat }) => {
+
 
     const handleNavigation = (e) =>{
         handleDeleteChat(e, _id, groupChat)
     }
-
-    console.log(isOnline , "13");
+   
     
-    
-
     return (
         <Link to={`/chat/${_id}`} onContextMenu={handleNavigation} sx={{ padding: 0 }}>
             <div
-                style={{ display: "flex", gap: "1rem", alignItems: "center", padding: "1rem", background: sameSender ? "black" : "unset", color: sameSender ? "white" : "unset", position: "relative" }}>
+                style={{ display: "flex", gap: "1rem", alignItems: "center", padding: "1rem", backdropFilter: sameSender ? "blur(10px)" : "", background: sameSender ? "rgba(234, 112, 112, 0.9)" : "unset", color: sameSender ? "white" : "unset", position: "relative",border: sameSender ? "1px solid rgba(255, 255, 255, 0.3)" : "",}}>
                 <AvatarCard avatar={avatar} />
                 <Stack>
                     <Typography>{name}</Typography>

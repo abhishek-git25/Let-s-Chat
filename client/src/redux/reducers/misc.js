@@ -22,7 +22,9 @@ const initialState = {
     callerName: "",
     calleeName: "",
     callee : "",
-    receivingCall : false
+    receivingCall : false,
+    isMessageMenu : false,
+
 }
 
 const miscSlice = createSlice({
@@ -82,6 +84,9 @@ const miscSlice = createSlice({
         },
         setCallee : (state, action) => {
             state.callee = action.payload
+        },
+        setIsMessageMenu : (state , action) => {
+            state.isMessageMenu = action.payload
         }
 
 
@@ -89,4 +94,4 @@ const miscSlice = createSlice({
 })
 
 export default miscSlice
-export const { setCalleeName, setStream, setCaller, setCallAccepted, setCallEnded, setCallerName, setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader, setSelectedDeleteChat, setIsCall,setCallee,setRecievingCall } = miscSlice.actions
+export const { setCalleeName, setStream, setCaller, setCallAccepted, setCallEnded, setCallerName, setIsNewGroup, setIsAddMember, setIsNotification, setIsMobileMenuFriendly, setIsSearch, setIsFileMenu, setIsDeleteMenu, setIsUploadingLoader, setSelectedDeleteChat, setIsCall,setCallee,setRecievingCall,setIsMessageMenu } = miscSlice.actions

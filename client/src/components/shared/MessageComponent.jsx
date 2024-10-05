@@ -5,7 +5,7 @@ import React from 'react';
 import { fileFormat } from '../../lib/features';
 import RenderAttachment from './RenderAttachment';
 
-const MessageComponent = ({ message, user }) => {
+const MessageComponent = ({ message, user,handleEditMessage }) => {
 
   const { sender, content, attachments = [], createAt } = message
 
@@ -13,10 +13,17 @@ const MessageComponent = ({ message, user }) => {
 
   const timeAgo = moment(createAt).fromNow()
 
+  const handleClick = (e) => {
+    handleEditMessage(e , message)
+  }
+
+
+
   return (
     <motion.div
       initial={{ opacity: 0, y: "-100%" }}
       whileInView={{ opacity: 1, y: 0 }}
+      onContextMenu={handleClick}
 
       style={{
         alignSelf: sameSender ? "flex-end" : "flex-start",

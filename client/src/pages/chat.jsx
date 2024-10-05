@@ -1,8 +1,8 @@
-import { AttachFile, Call, Send, VideoCall } from '@mui/icons-material'
-import { IconButton, Skeleton, Stack } from '@mui/material'
+import { AttachFile, Call, Close, Send, VideoCall } from '@mui/icons-material'
+import { Box, IconButton, Skeleton, Stack, Typography } from '@mui/material'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { orange } from '../components/constants/color'
-import { ALERT, CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, START_TYPING, STOP_TYPING } from '../components/constants/events'
+import { ALERT, CHAT_JOINED, CHAT_LEFT, DELETE_MESSAGE, EDIT_MESSAGE, NEW_MESSAGE, REFETCH_CHATS, START_TYPING, STOP_TYPING } from '../components/constants/events'
 import FileMenu from '../components/dialogs/FileMenu'
 import AppLayout from '../components/layout/AppLayout'
 import MessageComponent from '../components/shared/MessageComponent'
@@ -12,10 +12,11 @@ import { useChatDetailsQuery, useGetAllMessagesQuery } from '../redux/api/api'
 import { useSocket } from '../socket'
 import { useInfiniteScrollTop } from '6pp'
 import { useDispatch } from 'react-redux'
-import { setIsCall, setIsFileMenu } from '../redux/reducers/misc'
+import { setIsCall, setIsFileMenu, setIsMessageMenu } from '../redux/reducers/misc'
 import { removeMessageAlert } from '../redux/reducers/chat'
 import { TypingLoader } from '../components/layout/Loaders'
 import { useNavigate } from 'react-router-dom'
+import MessageMenu from '../components/dialogs/MessageMenu'
 
 const Chat = ({ chatId, user }) => {
 
@@ -24,6 +25,7 @@ const Chat = ({ chatId, user }) => {
 
   const containerRef = useRef(null)
   const typingTimeOut = useRef(null)
+  const menuAnchor = useRef(null)
   const bottomRef = useRef(null)
   const navigate = useNavigate()
 
@@ -34,6 +36,8 @@ const Chat = ({ chatId, user }) => {
   const [fileMenuAnchor, setFileMenuAnchor] = useState(null)
   const [iamTyping, setIamTyping] = useState(false)
   const [userTyping, setUserTyping] = useState(false)
+  const [editMessage, setEditMessage] = useState({})
+  const [actionType, setActionType] = useState('')
 
 
 
@@ -44,6 +48,7 @@ const Chat = ({ chatId, user }) => {
   const socket = useSocket()
 
   const getOldMessageChunk = useGetAllMessagesQuery({ chatId, page })
+
 
   const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId })
 
@@ -77,11 +82,50 @@ const Chat = ({ chatId, user }) => {
     }
   }, [messageList, messages])
 
+  useEffect(() => {
+    if (actionType === "Edit") {
+      setMessages(editMessage?.content)
+    } else if (actionType === "Delete") {
+      deleteMessage()
+    }
+  }, [actionType])
+
+
+  const deleteMessage = () => {
+    const messageId = editMessage._id
+    socket.emit(DELETE_MESSAGE, {
+      chatId, members, messages, messageId
+    })
+    setActionType('')
+  }
 
   const newMessages = useCallback((data) => {
     if (data.chatId !== chatId) return
     setMessageList((prevMsg) => [...prevMsg, data.message])
   }, [chatId])
+
+
+  const refetchMessages = useCallback((data) => {
+    getOldMessageChunk.refetch()
+  }, [])
+
+
+  const openMenu = (e, data) => {
+    dispatch(setIsMessageMenu(true))
+    setEditMessage(data)
+    menuAnchor.current = e.currentTarget
+  }
+
+
+  const cancelEditMessage = () => {
+    setEditMessage({})
+    setActionType('')
+    setMessages('')
+  }
+
+  const closeMenu = () => {
+    dispatch(setIsMessageMenu(false))
+  }
 
 
   const startTypingListener = useCallback((data) => {
@@ -113,25 +157,24 @@ const Chat = ({ chatId, user }) => {
     [ALERT]: alertListener,
     [NEW_MESSAGE]: newMessages,
     [START_TYPING]: startTypingListener,
-    [STOP_TYPING]: stopTypingListener
+    [STOP_TYPING]: stopTypingListener,
+    [REFETCH_CHATS]: refetchMessages
   }
 
   useSocketHandlers(socket, eventHandler)
 
   useErrors(errors);
 
+  const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(containerRef, getOldMessageChunk?.data?.totalPages, page, setPage, getOldMessageChunk?.data?.messages)
 
   const handleFileOpen = (e) => {
     dispatch(setIsFileMenu(true))
     setFileMenuAnchor(e.currentTarget)
   }
 
-  const handleCall = () =>{
+  const handleCall = () => {
     dispatch(setIsCall(true))
   }
-
-
-  const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(containerRef, getOldMessageChunk?.data?.totalPages, page, setPage, getOldMessageChunk?.data?.messages)
 
 
   const messageOnChange = (e) => {
@@ -140,7 +183,6 @@ const Chat = ({ chatId, user }) => {
       socket.emit(START_TYPING, { members, chatId })
       setIamTyping(true)
     }
-
 
     if (typingTimeOut.current) clearTimeout(typingTimeOut.current)
 
@@ -156,18 +198,27 @@ const Chat = ({ chatId, user }) => {
 
     if (!messages.trim()) return
     // Emitting the messages to the server
-    socket.emit(NEW_MESSAGE, { chatId, members, messages })
+    if (!actionType) {
+      socket.emit(NEW_MESSAGE, { chatId, members, messages })
+    } else if (actionType === "Edit") {
+      const messageId = editMessage._id
+      socket.emit(EDIT_MESSAGE, { chatId, members, messages, messageId })
+      setEditMessage({})
+      setActionType('')
+    }
+
     setMessages("")
   }
 
 
   return chatDetails.isLoading ? (<Skeleton />) : (
     <>
-      <Stack direction={"row"} justifyContent={"end"}  padding={"1rem"}  position={"relative"} width={"100%"} background = {"white"} height={"10%"}>
-      <IconButton sx={{ position : "absolute",marginRight : "4rem" }} onClick={handleCall} >
-        <Call/>
-      </IconButton>
-        <IconButton sx={{ position : "absolute" }} onClick={handleCall}>
+      <MessageMenu menuAnchor={menuAnchor.current} closeMenu={closeMenu} setActionType={setActionType} cancelEditMessage={cancelEditMessage} user ={user} editMessage={editMessage}  />
+      <Stack direction={"row"} justifyContent={"end"} padding={"1rem"} position={"relative"} width={"100%"} background={"white"} height={"10%"}>
+        <IconButton sx={{ position: "absolute", marginRight: "4rem" }} onClick={handleCall} >
+          <Call />
+        </IconButton>
+        <IconButton sx={{ position: "absolute" }} onClick={handleCall}>
           <VideoCall />
         </IconButton>
       </Stack>
@@ -184,11 +235,12 @@ const Chat = ({ chatId, user }) => {
         }}
       >
         {!getOldMessageChunk.isLoading && getOldMessageChunk?.data?.messages.map((item) => {
-          return <MessageComponent message={item} user={user} key={item.id} />
+
+          return <MessageComponent message={item} user={user} key={item.id} handleEditMessage={openMenu} />
         })}
         {userTyping && <TypingLoader />}
         {messageList.map((item) => {
-          return <MessageComponent message={item} user={user} key={item.id} />
+          return <MessageComponent message={item} user={user} key={item.id} handleEditMessage={openMenu} />
         })}
 
         <div ref={bottomRef} />
@@ -200,6 +252,18 @@ const Chat = ({ chatId, user }) => {
         onSubmit={submitHandler}
       >
         <Stack direction={"row"} height={"100%"} padding={"1rem"} alignItems={"center"} position={"relative"} >
+          {(actionType === "Edit" && editMessage) &&
+            <Stack color={"white"} direction={"row"} justifyContent={"space-between"} backgroundColor={"rgba(234, 112, 112, 0.8)"} border={"1px solid white"} width={"-webkit-fill-available"} height={"100%"} position={"absolute"} sx={{ top: -50, bottom: 0, padding: "10px", borderTopRightRadius: "10px", borderTopLeftRadius: "10px", left: 0, right: 0, }}>
+
+              <Box >
+                <Typography fontSize={"14px"} fontWeight={"600"} >You</Typography>
+                <Typography fontSize={"14px"} >{editMessage?.content}</Typography>
+              </Box>
+              <Box onClick={() => cancelEditMessage()}>
+                <Close />
+              </Box>
+
+            </Stack>}
           <IconButton sx={{ position: "absolute", left: "1rem", rotate: "30deg" }} onClick={handleFileOpen}>
             <AttachFile />
           </IconButton>

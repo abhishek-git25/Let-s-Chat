@@ -20,7 +20,6 @@ const DeleteChatMenu = ({ dispatch, deleteOptionAnchor }) => {
 
     const isGroup = selectedDeleteChat?.groupChat
 
-    console.log(selectedDeleteChat , "20");
 
     const closeHandler = () => {
         dispatch(setIsDeleteMenu(false))
